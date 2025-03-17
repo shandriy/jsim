@@ -1,19 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link rel="stylesheet" href="main.css">
+
   <script src="api/keyboard.js"></script>
+  <script src="src/main.js"></script>
 </head>
 <body>
-  <script>
-    var keyboard = new Keyboard.KeyListener();
-    var listeners = keyboard.addListener(window, ["KeyW", "KeyA"], function(code, event) {
-      if (event === "keydown")
-        console.log(code)
-    });
-
-    setTimeout(function() {
-      keyboard.removeListener(window, listeners[0], listeners[1]);
-    }, 5000)
-  </script>
 </body>
 </html>

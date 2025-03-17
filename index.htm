@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="api/keyboard.js"></script>
+</head>
+<body>
+  <script>
+    var keyboard = new Keyboard.KeyListener();
+    var listeners = keyboard.addListener(window, ["KeyW", "KeyA"], function(code, event) {
+      if (event === "keydown")
+        console.log(code)
+    });
+
+    setTimeout(function() {
+      keyboard.removeListener(window, listeners[0], listeners[1]);
+    }, 5000)
+  </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 (function() {
-  var keyboard = new Keyboard.KeyListener();
+  var keyboard = new KeyListener();
   keyboard.addListener(window);
 
   var canvas = document.createElement("canvas");

@@ -1,7 +1,5 @@
-window.Keyboard = (function() {
-  var Keyboard = {};
-
-  Keyboard.KeyListener = function() {
+window.KeyListener = (function() {
+  var KeyListener = function() {
     var _this = this;
 
     _this.keysDown = [];
@@ -75,7 +73,7 @@ window.Keyboard = (function() {
     }
   };
 
-  Keyboard.KeyListener.prototype = {
+  KeyListener.prototype = {
     keyDown: function(code) {
       return this.keysDown.indexOf(code) > -1;
     },
@@ -84,5 +82,5 @@ window.Keyboard = (function() {
     }
   };
 
-  return Keyboard;
+  return KeyListener;
 })();

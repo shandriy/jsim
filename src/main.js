@@ -29,6 +29,11 @@
     }
   }
 
+  var colliders = [
+    [0, 0, 480, 360],
+    [240, 180, 480, 180]
+  ]
+
   var player = {
     x: 0,
     y: 0,
@@ -90,6 +95,19 @@
       unit(player.width),
       unit(player.height)
     );
+
+    context.lineWidth = unit(2);
+    context.strokeStyle = "#000";
+
+    context.beginPath();
+
+    for (var i = 0; i < colliders.length; i++) {
+      context.moveTo(unit(colliders[i][0]), unit(colliders[i][1]));
+      context.lineTo(unit(colliders[i][2]), unit(colliders[i][3]));
+    }
+
+    context.stroke();
+    context.closePath();
 
     context.translate(-translationX, -translationY);
 

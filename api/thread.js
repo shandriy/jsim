@@ -15,7 +15,7 @@ window.Thread = (function() {
         callback();
       }
 
-      setTimeout(timeout, (1000 * ((correctCycles + 1) / fps)) - timeDifference);
+      setTimeout(timeout, (1000 * ((correctCycles + 1) / fps)) - timeDifference - 1);
     }
 
     this.start = function() {

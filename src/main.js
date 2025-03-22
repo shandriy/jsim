@@ -41,34 +41,30 @@
     height: 20
   }
 
+  var movementVec = new Vector2d(0, 0);
+
   var thread = new Thread(60, function() {
-    var xShift = 0;
-    var yShift = 0;
+    movementVec.set(0, 0);
 
     if (keyboard.keyDown("KeyW") || keyboard.keyDown("ArrowUp"))
-      yShift -= 1;
+      movementVec.y -= 1;
     if (keyboard.keyDown("KeyS") || keyboard.keyDown("ArrowDown"))
-      yShift += 1;
+      movementVec.y += 1;
     if (keyboard.keyDown("KeyA") || keyboard.keyDown("ArrowLeft"))
-      xShift -= 1;
+      movementVec.x -= 1;
     if (keyboard.keyDown("KeyD") || keyboard.keyDown("ArrowRight"))
-      xShift += 1;
+      movementVec.x += 1;
 
-    var divisor = Math.sqrt(xShift * xShift + yShift * yShift);
-    xShift /= divisor;
-    yShift /= divisor;
+    movementVec.normalize();
 
     var multiplier = 1;
     if (keyboard.keyDown("ShiftLeft") || keyboard.keyDown("ShiftRight"))
-      multiplier = 3;
-    xShift *= multiplier;
-    yShift *= multiplier;
+      multiplier *= 3;
 
-    if (isNaN(xShift)) xShift = 0;
-    if (isNaN(yShift)) yShift = 0;
+    movementVec.scale(multiplier)
 
-    player.x += xShift;
-    player.y += yShift;
+    player.x += movementVec.x;
+    player.y += movementVec.y;
   })
   thread.start();
 

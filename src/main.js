@@ -194,6 +194,8 @@
     context.fillStyle = "#fff";
     context.fillRect(unit(0), unit(0), unit(unitWidth), unit(unitHeight));
 
+    context.translate(-unit(player.x) + unit(240), -unit(player.y) + unit(180));
+
     context.fillStyle = "#f00";
 
     context.fillRect(
@@ -203,45 +205,8 @@
       unit(player.height)
     );
 
-    context.fillStyle = "#000";
-
-    context.fillRect(
-      unit(player.x - 1),
-      unit(player.y - 1),
-      unit(2),
-      unit(2)
-    );
-
-    context.fillRect(
-      unit(player.x + player.width / 2 - 1),
-      unit(player.y - player.height / 2 - 1),
-      unit(2),
-      unit(2)
-    );
-
-    context.fillRect(
-      unit(player.x - player.width / 2 - 1),
-      unit(player.y - player.height / 2 - 1),
-      unit(2),
-      unit(2)
-    );
-
-    context.fillRect(
-      unit(player.x - player.width / 2 - 1),
-      unit(player.y + player.height / 2 - 1),
-      unit(2),
-      unit(2)
-    );
-
-    context.fillRect(
-      unit(player.x + player.width / 2 - 1),
-      unit(player.y + player.height / 2 - 1),
-      unit(2),
-      unit(2)
-    );
-
     context.lineWidth = unit(2);
-    context.strokeStyle = "#000";
+    context.strokeStyle = "#00f";
 
     context.beginPath();
 
@@ -253,6 +218,7 @@
     context.stroke();
     context.closePath();
 
+    context.translate(unit(player.x) - unit(240), unit(player.y) - unit(180));
     context.translate(-translationX, -translationY);
 
     requestAnimationFrame(frame);

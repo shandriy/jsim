@@ -105,15 +105,31 @@
             movementVec.x !== 0 &&
             elem[0] > left && elem[0] < right &&
             (
-              (top > Math.min(elem[1], elem[3]) && top < Math.max(elem[1], elem[3])) ||
-              (bottom > Math.min(elem[1], elem[3]) && bottom < Math.max(elem[1], elem[3]))
+              (
+                (top > Math.min(elem[1], elem[3]) && top < Math.max(elem[1], elem[3])) ||
+                (bottom > Math.min(elem[1], elem[3]) && bottom < Math.max(elem[1], elem[3]))
+              ) ||
+              (
+                top <= elem[1] && bottom >= elem[1] &&
+                top <= elem[3] && bottom >= elem[3] &&
+                left <= elem[0] && right >= elem[0] &&
+                left <= elem[2] && right >= elem[2]
+              )
             )
           :
             movementVec.y !== 0 &&
             elem[1] > top && elem[1] < bottom &&
             (
-              (left > Math.min(elem[0], elem[2]) && left < Math.max(elem[0], elem[2])) ||
-              (right > Math.min(elem[0], elem[2]) && right < Math.max(elem[0], elem[2]))
+              (
+                (left > Math.min(elem[0], elem[2]) && left < Math.max(elem[0], elem[2])) ||
+                (right > Math.min(elem[0], elem[2]) && right < Math.max(elem[0], elem[2]))
+              ) ||
+              (
+                top <= elem[1] && bottom >= elem[1] &&
+                top <= elem[3] && bottom >= elem[3] &&
+                left <= elem[0] && right >= elem[0] &&
+                left <= elem[2] && right >= elem[2]
+              )
             )
         );
       });

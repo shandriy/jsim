@@ -69,11 +69,12 @@
     movementVec.scale(multiplier * delta)
 
     var playerLength = Math.sqrt(player.width * player.width + player.height * player.height);
+    var elimRadius = movementVec.magnitude() + playerLength;
 
-    var validCol = colliders.filter(function(elem) {
+    var possibleColliders = colliders.filter(function(elem) {
       var cx = player.x;
-      var cy = player.y
-      var r = movementVec.magnitude() + playerLength;
+      var cy = player.y;
+      var r = elimRadius;
 
       var top = elem[1] < elem[3] ? elem[1] : elem[3];
       var left = elem[0] < elem[2] ? elem[0] : elem[2];
@@ -88,104 +89,118 @@
       return ( dx * dx + dy * dy ) <= r * r;
     });
 
-    var playerOriginx = player.x;
-    var playerOriginy = player.y;
+    var i = 0;
 
-    player.x += movementVec.x;
-    player.y += movementVec.y;
+    while (true) {
+      i++;
 
-    var corner1x = player.x + player.width / 2;
-    var corner1y = player.y + player.height / 2;
-    var corner2x = player.x - player.width / 2;
-    var corner2y = player.y + player.height / 2;
-    var corner3x = player.x - player.width / 2;
-    var corner3y = player.y - player.height / 2;
-    var corner4x = player.x + player.width / 2;
-    var corner4y = player.y - player.height / 2;
+      var corner1x = player.x + movementVec.x + player.width / 2;
+      var corner1y = player.y + movementVec.y - player.height / 2;
+      var corner2x = player.x + movementVec.x - player.width / 2;
+      var corner2y = player.y + movementVec.y - player.height / 2;
+      var corner3x = player.x + movementVec.x - player.width / 2;
+      var corner3y = player.y + movementVec.y + player.height / 2;
+      var corner4x = player.x + movementVec.x + player.width / 2;
+      var corner4y = player.y + movementVec.y + player.height / 2;
 
-    var collided = [];
+      var colliding = possibleColliders.filter(function(elem) {
+        return (
+          utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, elem[0], elem[1], elem[2], elem[3]) ||
+          utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, elem[0], elem[1], elem[2], elem[3]) ||
+          utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, elem[0], elem[1], elem[2], elem[3]) ||
+          utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, elem[0], elem[1], elem[2], elem[3])
+        );
+      });
 
-    for (var i = 0; i < validCol.length; i++) {
-      if (
-        utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, validCol[i][0], validCol[i][1], validCol[i][2], validCol[i][3]) ||
-        utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, validCol[i][0], validCol[i][1], validCol[i][2], validCol[i][3]) ||
-        utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, validCol[i][0], validCol[i][1], validCol[i][2], validCol[i][3]) ||
-        utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, validCol[i][0], validCol[i][1], validCol[i][2], validCol[i][3])
-      ) {
-        collided.push(validCol[i]);
+      if (colliding.length === 0) break;
+
+      for (var j = 0; j < colliding.length; j++) {
+        var elem = colliding[j];
+
+        var perpMag = Math.sqrt((elem[1] - elem[3]) * (elem[1] - elem[3]) + (elem[0] - elem[2]) * (elem[0] - elem[2]));
+        var perpScale = playerLength / perpMag;
+
+        var perp = [
+          (elem[1] - elem[3]) * perpScale,
+          (elem[2] - elem[0]) * perpScale,
+          (elem[3] - elem[1]) * perpScale,
+          (elem[0] - elem[2]) * perpScale
+        ];
+
+        var largestDistance = 0;
+        var leftOf = utils.leftOfLine(player.x, player.y, elem[0], elem[1], elem[2], elem[3]);
+
+        var corner1toLine = utils.pointToLine(corner1x, corner1y, elem[0], elem[1], elem[2], elem[3]);
+        var corner2toLine = utils.pointToLine(corner2x, corner2y, elem[0], elem[1], elem[2], elem[3]);
+        var corner3toLine = utils.pointToLine(corner3x, corner3y, elem[0], elem[1], elem[2], elem[3]);
+        var corner4toLine = utils.pointToLine(corner4x, corner4y, elem[0], elem[1], elem[2], elem[3]);
+
+        corner1toLine = utils.segmentsIntersect(elem[0], elem[1], elem[2], elem[3], perp[0] + corner1x, perp[1] + corner1y, perp[2] + corner1x, perp[3] + corner1y) ? corner1toLine : 0;
+        corner2toLine = utils.segmentsIntersect(elem[0], elem[1], elem[2], elem[3], perp[0] + corner2x, perp[1] + corner2y, perp[2] + corner2x, perp[3] + corner2y) ? corner2toLine : 0;
+        corner3toLine = utils.segmentsIntersect(elem[0], elem[1], elem[2], elem[3], perp[0] + corner3x, perp[1] + corner3y, perp[2] + corner3x, perp[3] + corner3y) ? corner3toLine : 0;
+        corner4toLine = utils.segmentsIntersect(elem[0], elem[1], elem[2], elem[3], perp[0] + corner4x, perp[1] + corner4y, perp[2] + corner4x, perp[3] + corner4y) ? corner4toLine : 0;
+
+        corner1toLine = utils.leftOfLine(corner1x, corner1y, elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner1toLine : 0;
+        corner2toLine = utils.leftOfLine(corner2x, corner2y, elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner1toLine : 0;
+        corner3toLine = utils.leftOfLine(corner3x, corner3y, elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner1toLine : 0;
+        corner4toLine = utils.leftOfLine(corner4x, corner4y, elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner1toLine : 0;
+
+        var corner1toEdge1Int = utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, perp[0] + elem[0], perp[1] + elem[1], perp[2] + elem[0], perp[3] + elem[1]);
+        var corner1toEdge2Int = utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, perp[0] + elem[2], perp[1] + elem[3], perp[2] + elem[2], perp[3] + elem[3]);
+        var corner2toEdge1Int = utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, perp[0] + elem[0], perp[1] + elem[1], perp[2] + elem[0], perp[3] + elem[1]);
+        var corner2toEdge2Int = utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, perp[0] + elem[2], perp[1] + elem[3], perp[2] + elem[2], perp[3] + elem[3]);
+        var corner3toEdge1Int = utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, perp[0] + elem[0], perp[1] + elem[1], perp[2] + elem[0], perp[3] + elem[1]);
+        var corner3toEdge2Int = utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, perp[0] + elem[2], perp[1] + elem[3], perp[2] + elem[2], perp[3] + elem[3]);
+        var corner4toEdge1Int = utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, perp[0] + elem[0], perp[1] + elem[1], perp[2] + elem[0], perp[3] + elem[1]);
+        var corner4toEdge2Int = utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, perp[0] + elem[2], perp[1] + elem[3], perp[2] + elem[2], perp[3] + elem[3]);
+
+        var corner1toEdge1 = corner1toEdge1Int ? utils.pointToLine(corner1toEdge1Int[0], corner1toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner1toEdge2 = corner1toEdge2Int ? utils.pointToLine(corner1toEdge2Int[0], corner1toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner2toEdge1 = corner2toEdge1Int ? utils.pointToLine(corner2toEdge1Int[0], corner2toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner2toEdge2 = corner2toEdge2Int ? utils.pointToLine(corner2toEdge2Int[0], corner2toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner3toEdge1 = corner3toEdge1Int ? utils.pointToLine(corner3toEdge1Int[0], corner3toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner3toEdge2 = corner3toEdge2Int ? utils.pointToLine(corner3toEdge2Int[0], corner3toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner4toEdge1 = corner4toEdge1Int ? utils.pointToLine(corner4toEdge1Int[0], corner4toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+        var corner4toEdge2 = corner4toEdge2Int ? utils.pointToLine(corner4toEdge2Int[0], corner4toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) : 0;
+
+        corner1toEdge1 = corner1toEdge1Int ? utils.leftOfLine(corner1toEdge1Int[0], corner1toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner1toEdge1 : 0 : 0;
+        corner1toEdge2 = corner1toEdge2Int ? utils.leftOfLine(corner1toEdge2Int[0], corner1toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner1toEdge2 : 0 : 0;
+        corner2toEdge1 = corner2toEdge1Int ? utils.leftOfLine(corner2toEdge1Int[0], corner2toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner2toEdge1 : 0 : 0;
+        corner2toEdge2 = corner2toEdge2Int ? utils.leftOfLine(corner2toEdge2Int[0], corner2toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner2toEdge2 : 0 : 0;
+        corner3toEdge1 = corner3toEdge1Int ? utils.leftOfLine(corner3toEdge1Int[0], corner3toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner3toEdge1 : 0 : 0;
+        corner3toEdge2 = corner3toEdge2Int ? utils.leftOfLine(corner3toEdge2Int[0], corner3toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner3toEdge2 : 0 : 0;
+        corner4toEdge1 = corner4toEdge1Int ? utils.leftOfLine(corner4toEdge1Int[0], corner4toEdge1Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner4toEdge1 : 0 : 0;
+        corner4toEdge2 = corner4toEdge2Int ? utils.leftOfLine(corner4toEdge2Int[0], corner4toEdge2Int[1], elem[0], elem[1], elem[2], elem[3]) !== leftOf ? corner4toEdge2 : 0 : 0;
+
+        largestDistance = Math.max(largestDistance, corner1toLine);
+        largestDistance = Math.max(largestDistance, corner2toLine);
+        largestDistance = Math.max(largestDistance, corner3toLine);
+        largestDistance = Math.max(largestDistance, corner4toLine);
+        largestDistance = Math.max(largestDistance, corner1toEdge1);
+        largestDistance = Math.max(largestDistance, corner1toEdge2);
+        largestDistance = Math.max(largestDistance, corner2toEdge1);
+        largestDistance = Math.max(largestDistance, corner2toEdge2);
+        largestDistance = Math.max(largestDistance, corner3toEdge1);
+        largestDistance = Math.max(largestDistance, corner3toEdge2);
+        largestDistance = Math.max(largestDistance, corner4toEdge1);
+        largestDistance = Math.max(largestDistance, corner4toEdge2);
+
+        if (largestDistance === 0) continue;
+
+        movementVec.x += (perp[0] / playerLength) * largestDistance;
+        movementVec.y += (perp[1] / playerLength) * largestDistance;
+
+        break;
+      }
+
+      if (i >= 50) {
+        //console.log("unresolved collision");
+        break;
       }
     }
 
-    collided.sort(function(a, b) {
-      var side1a = utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, a[0], a[1], a[2], a[3]);
-      var side2a = utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, a[0], a[1], a[2], a[3]);
-      var side3a = utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, a[0], a[1], a[2], a[3]);
-      var side4a = utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, a[0], a[1], a[2], a[3]);
-      var side1b = utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, b[0], b[1], b[2], b[3]);
-      var side2b = utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, b[0], b[1], b[2], b[3]);
-      var side3b = utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, b[0], b[1], b[2], b[3]);
-      var side4b = utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, b[0], b[1], b[2], b[3]);
-
-      var shortesta = Infinity;
-      var shortestb = Infinity;
-
-      side1a && (shortesta = Math.min(Math.sqrt((playerOriginx - side1a[0]) ** 2 + (playerOriginy - side1a[1]) ** 2), shortesta));
-      side2a && (shortesta = Math.min(Math.sqrt((playerOriginx - side2a[0]) ** 2 + (playerOriginy - side2a[1]) ** 2), shortesta));
-      side3a && (shortesta = Math.min(Math.sqrt((playerOriginx - side3a[0]) ** 2 + (playerOriginy - side3a[1]) ** 2), shortesta));
-      side4a && (shortesta = Math.min(Math.sqrt((playerOriginx - side4a[0]) ** 2 + (playerOriginy - side4a[1]) ** 2), shortesta));
-      side1b && (shortestb = Math.min(Math.sqrt((playerOriginx - side1b[0]) ** 2 + (playerOriginy - side1b[1]) ** 2), shortestb));
-      side2b && (shortestb = Math.min(Math.sqrt((playerOriginx - side2b[0]) ** 2 + (playerOriginy - side2b[1]) ** 2), shortestb));
-      side3b && (shortestb = Math.min(Math.sqrt((playerOriginx - side3b[0]) ** 2 + (playerOriginy - side3b[1]) ** 2), shortestb));
-      side4b && (shortestb = Math.min(Math.sqrt((playerOriginx - side4b[0]) ** 2 + (playerOriginy - side4b[1]) ** 2), shortestb));
-
-      return shortesta - shortestb;
-    });
-
-    if (collided.length === 0) return;
-
-    for (var j = 0; j < collided.length; j++) {
-      var leftOf = utils.leftOfLine(playerOriginx, playerOriginy, collided[j][0], collided[j][1], collided[j][2], collided[j][3]);
-
-      var slope = (collided[j][1] - collided[j][3]) / (collided[j][0] - collided[j][2]);
-      slope = 1 / slope;
-
-      var x = isFinite(slope) ? 1 : 0;
-      var y = isFinite(slope) ? slope : slope < 0 ? -1 : 1;
-
-      var vec = new Vector2d(x, y);
-      vec.normalize();
-
-      var farthest = 0;
-
-      var vecX = vec.x * playerLength;
-      var vecY = vec.y * playerLength;
-
-      var corner1Int = utils.segmentsIntersect(corner1x - vecX, corner1y + vecY, corner1x + vecX, corner1y - vecY, collided[j][0], collided[j][1], collided[j][2], collided[j][3]);
-      var corner2Int = utils.segmentsIntersect(corner2x - vecX, corner2y + vecY, corner2x + vecX, corner2y - vecY, collided[j][0], collided[j][1], collided[j][2], collided[j][3]);
-      var corner3Int = utils.segmentsIntersect(corner3x - vecX, corner3y + vecY, corner3x + vecX, corner3y - vecY, collided[j][0], collided[j][1], collided[j][2], collided[j][3]);
-      var corner4Int = utils.segmentsIntersect(corner4x - vecX, corner4y + vecY, corner4x + vecX, corner4y - vecY, collided[j][0], collided[j][1], collided[j][2], collided[j][3]);
-
-      var corner1 = corner1Int ? utils.pointToLine(corner1x, corner1y, collided[j][0], collided[j][1], collided[j][2], collided[j][3]) : 0;
-      var corner2 = corner2Int ? utils.pointToLine(corner2x, corner2y, collided[j][0], collided[j][1], collided[j][2], collided[j][3]) : 0;
-      var corner3 = corner3Int ? utils.pointToLine(corner3x, corner3y, collided[j][0], collided[j][1], collided[j][2], collided[j][3]) : 0;
-      var corner4 = corner4Int ? utils.pointToLine(corner4x, corner4y, collided[j][0], collided[j][1], collided[j][2], collided[j][3]) : 0;
-
-      if (corner1 > farthest && leftOf !== utils.leftOfLine(corner1x, corner1y, collided[j][0], collided[j][1], collided[j][2], collided[j][3])) farthest = corner1;
-      if (corner2 > farthest && leftOf !== utils.leftOfLine(corner2x, corner2y, collided[j][0], collided[j][1], collided[j][2], collided[j][3])) farthest = corner2;
-      if (corner3 > farthest && leftOf !== utils.leftOfLine(corner3x, corner3y, collided[j][0], collided[j][1], collided[j][2], collided[j][3])) farthest = corner3;
-      if (corner4 > farthest && leftOf !== utils.leftOfLine(corner4x, corner4y, collided[j][0], collided[j][1], collided[j][2], collided[j][3])) farthest = corner4;
-
-      vec.scale(farthest);
-      vec.y *= -1;
-
-      if (leftOf)
-        vec.scale(-1);
-
-      if (vec.x === 0 && vec.y === 0) continue;
-
-      player.x += vec.x;
-      player.y += vec.y;
-    }
+    player.x += movementVec.x;
+    player.y += movementVec.y;
   })
   thread.start();
 

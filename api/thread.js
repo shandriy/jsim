@@ -12,7 +12,7 @@ window.Thread = (function() {
       var correctCycles = Math.round(timeDifference * fps / 1000);
 
       for (; cycles < correctCycles; cycles++) {
-        callback();
+        callback(1000 / fps);
       }
 
       setTimeout(timeout, (1000 * ((correctCycles + 1) / fps)) - timeDifference - 1);

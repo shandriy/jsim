@@ -1,4 +1,6 @@
 (function() {
+  var utils = Utilities;
+
   var keyboard = new KeyListener();
   keyboard.addListener(window);
 
@@ -43,7 +45,9 @@
 
   var movementVec = new Vector2d(0, 0);
 
-  var thread = new Thread(60, function() {
+  var thread = new Thread(60, function(delta) {
+    delta /= 16 + 2 / 3;
+
     movementVec.set(0, 0);
 
     if (keyboard.keyDown("KeyW") || keyboard.keyDown("ArrowUp"))
@@ -61,7 +65,7 @@
     if (keyboard.keyDown("ShiftLeft") || keyboard.keyDown("ShiftRight"))
       multiplier *= 3;
 
-    movementVec.scale(multiplier)
+    movementVec.scale(multiplier * delta)
 
     player.x += movementVec.x;
     player.y += movementVec.y;
@@ -85,6 +89,31 @@
     context.fillRect(unit(0), unit(0), unit(unitWidth), unit(unitHeight));
 
     context.fillStyle = "#f00";
+
+    var corner1x = player.x + player.width / 2;
+    var corner1y = player.y + player.height / 2;
+    var corner2x = player.x - player.width / 2;
+    var corner2y = player.y + player.height / 2;
+    var corner3x = player.x - player.width / 2;
+    var corner3y = player.y - player.height / 2;
+    var corner4x = player.x + player.width / 2;
+    var corner4y = player.y - player.height / 2;
+
+    for (var i = 0; i < colliders.length; i++) {
+      colliders[i][0], colliders[i][1];
+      colliders[i][2], colliders[i][3];
+
+      if (
+        utils.segmentsIntersect(corner1x, corner1y, corner2x, corner2y, colliders[i][0], colliders[i][1], colliders[i][2], colliders[i][3]) ||
+        utils.segmentsIntersect(corner2x, corner2y, corner3x, corner3y, colliders[i][0], colliders[i][1], colliders[i][2], colliders[i][3]) ||
+        utils.segmentsIntersect(corner3x, corner3y, corner4x, corner4y, colliders[i][0], colliders[i][1], colliders[i][2], colliders[i][3]) ||
+        utils.segmentsIntersect(corner4x, corner4y, corner1x, corner1y, colliders[i][0], colliders[i][1], colliders[i][2], colliders[i][3])
+      ) {
+        context.fillStyle = "#ff0";
+        break;
+      }
+    }
+
     context.fillRect(
       unit(player.x - player.width / 2),
       unit(player.y - player.height / 2),

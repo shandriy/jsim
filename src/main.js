@@ -124,11 +124,15 @@
             distancea = Math.abs(Math.min(a[1], a[3]) - player.y);
           if (player.y > Math.max(a[1], a[3]))
             distancea = Math.abs(Math.max(a[1], a[3]) - player.y);
+
+          distancea /= player.height;
         } else {
           if (player.x < Math.min(a[0], a[2]))
             distancea = Math.abs(Math.min(a[0], a[2]) - player.x);
           if (player.x > Math.max(a[0], a[2]))
             distancea = Math.abs(Math.max(a[0], a[2]) - player.x);
+
+          distancea /= player.width;
         }
 
         if (b[0] === b[2]) {
@@ -136,11 +140,15 @@
             distanceb = Math.abs(Math.min(b[1], b[3]) - player.y);
           if (player.y > Math.max(b[1], b[3]))
             distanceb = Math.abs(Math.max(b[1], b[3]) - player.y);
+
+          distanceb /= player.height;
         } else {
           if (player.x < Math.min(b[0], b[2]))
             distanceb = Math.abs(Math.min(b[0], b[2]) - player.x);
           if (player.x > Math.max(b[0], b[2]))
             distanceb = Math.abs(Math.max(b[0], b[2]) - player.x);
+
+          distanceb /= player.width;
         }
 
         return distancea - distanceb;

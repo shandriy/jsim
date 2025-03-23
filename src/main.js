@@ -31,17 +31,22 @@
     }
   }
 
-  var colliders = [
-    [100, 50, 100, 100],
-    [50, 100, 100, 100],
-    [100, 50, 50, 50],
-  ]
+  var colliders = map.map(function(elem) {
+    var tile = tiles[elem[0]];
+
+    return [
+      tile[0] + elem[1] * 16,
+      tile[1] + elem[2] * 16,
+      tile[2] + elem[1] * 16,
+      tile[3] + elem[2] * 16
+    ];
+  });
 
   var player = {
-    x: 110,
-    y: 110,
-    width: 20,
-    height: 20
+    x: 8,
+    y: 8,
+    width: 14,
+    height: 14
   }
 
   var movementVec = new Vector2d(0, 0);

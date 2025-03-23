@@ -34,9 +34,23 @@ window.Utilities = {
     if (x < mincdx || x > maxcdx) return false;
     if (y < mincdy || y > maxcdy) return false;
 
+    if (x === ax && y == ay) return false;
+    if (x === bx && y == by) return false;
+    if (x === cx && y == cy) return false;
+    if (x === dx && y == dy) return false;
+
     return [x, y];
   },
+  pointToLine: function(x, y, ax, ay, bx, by) {
+    var bay = by - ay;
+    var bax = bx - ax;
 
+    return Math.abs(bay * x - bax * y + bx * ay - by * ax) / Math.sqrt(bay * bay + bax * bax);
+  },
+  leftOfLine: function(x, y, ax, ay, bx, by) {
+    if (ay === by) return y < ay;
+    return (bx - ax) * (y - ay) - (by - ay) * (x - ax) > 0;
+  },
   pointOnLine: function(x, y, ax, ay, bx, by) {
     var slopeAB = (ay - by) / (ax - bx)
 

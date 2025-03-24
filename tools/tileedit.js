@@ -24,6 +24,18 @@
 
     context.stroke();
     context.closePath();
+
+    context.strokeStyle = "#000";
+
+    context.beginPath();
+
+    context.moveTo(64, 64 - 4)
+    context.lineTo(64, 64 + 4);
+    context.moveTo(64 - 4, 64)
+    context.lineTo(64 + 4, 64);
+
+    context.stroke();
+    context.closePath();
   }
   function collider(encoded) {
     var elem = encoded.substring(1, encoded.length - 1).split(",")
@@ -50,9 +62,12 @@
 
   function encode(string) {
     var coords = [];
+    var counter = 0;
 
-    string.replace(/\d\d?/g, function(match) {
-      coords.push(match);
+    string.replace(/-?\d\d?/g, function(match) {
+      coords.push(counter % 2 === 0 ? parseInt(match) + 8 : -parseInt(match) + 8);
+
+      counter++;
     });
 
     return "[" + coords.toString() + "]";
@@ -63,7 +78,12 @@
     var coords = string.substring(1, string.length - 1).split(",");
 
     for (var i = 0; i < Math.floor(coords.length / 4); i++) {
-      out += "from " + coords[i * 4 + 0] + " " + coords[i * 4 + 1] + " to " + coords[i * 4 + 2] + " " + coords[i * 4 + 3] + "\n";
+      out +=
+        "from " +
+        (parseInt(coords[i * 4 + 0]) - 8) +
+        " " + (-parseInt(coords[i * 4 + 1]) + 8) +
+        " to " + (parseInt(coords[i * 4 + 2]) - 8) +
+        " " + (-parseInt(coords[i * 4 + 3]) + 8) + "\n";
     }
 
     return out;
@@ -76,6 +96,8 @@
   }
   output.onkeyup = function() {
     input.value = decode(output.value);
+    clear();
+    collider(output.value);
   }
 
   format.onclick = function() {
